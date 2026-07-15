@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E‑Commerce Product Catalog</title>
+  <!-- Bootstrap 5 & Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    /* custom styles */
+    body {
+      background: #f8f9fa;
+      padding-top: 70px;
+    }
+    .navbar-brand {
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .product-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: none;
+      border-radius: 16px;
+      background: #ffffff;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.04);
+      height: 100%;
+      cursor: pointer;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+    }
+    .product-card img {
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      height: 200px;
+      object-fit: cover;
+      background: #e9ecef;
+    }
+    .product-card .card-body {
+      padding: 1.25rem;
+    }
+    .product-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.3rem;
+    }
+    .product-category {
+      font-size: 0.8rem;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .product-price {
+      font-weight: 700;
+      color: #0d6efd;
+    }
+    .filter-section {
+      background: white;
+      padding: 1rem 1.2rem;
+      border-radius: 60px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      margin-bottom: 2rem;
+    }
+    .sticky-nav {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+    }
+    .modal-img {
+      width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      background: #f1f3f5;
+      border-radius: 12px;
+      padding: 8px;
+    }
+    #noProductsMsg {
+      display: none;
+      padding: 2rem 0;
+    }
+    .badge-category {
+      background: #e9ecef;
+      color: #212529;
+      font-weight: 400;
+      padding: 0.4rem 0.9rem;
+      border-radius: 40px;
+    }
+    .category-btn {
+      border-radius: 40px;
+      padding: 0.3rem 1.2rem;
+      margin: 0.2rem 0.3rem;
+      background: transparent;
+      border: 1px solid #dee2e6;
+      color: #212529;
+      transition: all 0.15s;
+    }
+    .category-btn.active,
+    .category-btn:hover {
+      background: #0d6efd;
+      border-color: #0d6efd;
+      color: white;
+    }
+    @media (max-width: 576px) {
+      .filter-section {
+        border-radius: 30px;
+        padding: 0.8rem 1rem;
+      }
+      .category-btn {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Navbar with categories & search -->
+  <nav class="navbar navbar-expand-md fixed-top sticky-nav">
+    <div class="container">
+      <a class="navbar-brand" href="#"><i class="fas fa-store-alt me-2 text-primary"></i>ProductCatalog</a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navContent">
+        <!-- Category filter buttons (mobile friendly) -->
+        <ul class="navbar-nav me-auto mb-2 mb-md-0 flex-wrap" id="categoryFilterContainer">
+          <li class="nav-item"><button class="category-btn active" data-category="all">All</button></li>
+          <!-- dynamic categories will be injected here -->
+        </ul>
+        <!-- Search -->
+        <form class="d-flex ms-auto" role="search" onsubmit="return false;">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <input class="form-control border-start-0" type="search" id="searchInput" placeholder="Search products..." aria-label="Search">
+          </div>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <div class="container">
+    <!-- Filter section (optional extra) -->
+    <div class="filter-section d-flex flex-wrap align-items-center justify-content-between">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="fw-semibold me-2"><i class="fas fa-tag me-1"></i>Categories:</span>
+        <div id="categoryBadgeContainer" class="d-flex flex-wrap gap-1">
+          <!-- badges will be injected -->
+        </div>
+      </div>
+      <div class="text-muted small mt-2 mt-sm-0">
+        <span id="productCount">0</span> products
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="row g-4" id="productList">
+      <!-- products injected by JS -->
+    </div>
+
+    <!-- No products message -->
+    <div id="noProductsMsg" class="text-center text-muted">
+      <i class="fas fa-box-open fa-3x mb-3 d-block"></i>
+      <h5>No products found</h5>
+      <p>Try adjusting your search or category filter.</p>
+    </div>
+  </div>
+
+  <!-- Product Detail Modal -->
+  <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title" id="modalProductTitle">Product name</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-4">
+            <div class="col-md-5 text-center">
+              <img src="" alt="product detail" id="modalProductImage" class="modal-img" />
+            </div>
+            <div class="col-md-7">
+              <p><span class="badge-category" id="modalProductCategory">Category</span></p>
+              <h3 class="fw-bold text-primary" id="modalProductPrice">$0.00</h3>
+              <p class="mt-3" id="modalProductDescription">Description goes here.</p>
+              <hr />
+              <div><strong>Specifications</strong></div>
+              <ul class="list-unstyled mt-2" id="modalProductSpecs">
+                <li><i class="fas fa-check-circle text-success me-2"></i> High quality</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i> In stock</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    (function() {
+      // ----- PRODUCT DATA -----
+      const products = [
+        { id: 1, title: 'Wireless Headphones', category: 'Electronics', price: 49.99, 
+          image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop&auto=format', 
+          description: 'High-quality over-ear headphones with noise cancellation and 20h battery life.', 
+          specs: ['Bluetooth 5.2', 'Noise cancellation', '20h battery', 'Comfortable ear cushions'] },
+        { id: 2, title: 'Running Sneakers', category: 'Footwear', price: 79.00, 
+          image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop&auto=format', 
+          description: 'Lightweight breathable running shoes with responsive cushioning.', 
+          specs: ['Mesh upper', 'EVA foam midsole', 'Rubber outsole', 'Available in 5 colors'] },
+        { id: 3, title: 'Smart Watch', category: 'Electronics', price: 129.99, 
+          image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop&auto=format', 
+          description: 'Track your fitness, receive notifications, and monitor your heart rate.', 
+          specs: ['AMOLED display', 'Heart rate monitor', 'GPS', 'Water resistant'] },
+        { id: 4, title: 'Backpack', category: 'Accessories', price: 39.95, 
+          image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop&auto=format', 
+          description: 'Durable and stylish backpack with multiple compartments for daily use.', 
+          specs: ['Water-resistant', 'Laptop sleeve', 'Adjustable straps', 'Lightweight'] },
+        { id: 5, title: 'Coffee Maker', category: 'Home & Kitchen', price: 89.99, 
+          image: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=400&h=300&fit=crop&auto=format', 
+          description: 'Programmable coffee maker with thermal carafe and brew strength control.', 
+          specs: ['12-cup capacity', 'Thermal carafe', 'Programmable timer', 'Auto shut-off'] },
+        { id: 6, title: 'Sunglasses', category: 'Accessories', price: 24.50, 
+          image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=300&fit=crop&auto=format', 
+          description: 'Polarized UV protection sunglasses with a classic aviator design.', 
+          specs: ['Polarized lenses', 'UV400 protection', 'Lightweight frame', 'Classic shape'] },
+        { id: 7, title: 'Fitness Tracker', category: 'Electronics', price: 59.99, 
+          image: 'https://images.unsplash.com/photo-1576243345690-4e4b79b63288?w=400&h=300&fit=crop&auto=format', 
+          description: 'Track your steps, sleep, and calories with this sleek wristband.', 
+          specs: ['Step counter', 'Sleep monitoring', 'Calorie tracker', 'Waterproof'] },
+        { id: 8, title: 'Leather Wallet', category: 'Accessories', price: 29.99, 
+          image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&h=300&fit=crop&auto=format', 
+          description: 'Minimalist genuine leather wallet with RFID blocking.', 
+          specs: ['Genuine leather', 'RFID blocking', '6 card slots', 'Coin pocket'] },
+        { id: 9, title: 'Bluetooth Speaker', category: 'Electronics', price: 34.99, 
+          image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop&auto=format', 
+          description: 'Portable waterproof speaker with 360° sound and 12h playtime.', 
+          specs: ['360° sound', 'Waterproof IPX7', '12h battery', 'Bluetooth 5.0'] },
+        { id: 10, title: 'Desk Lamp', category: 'Home & Kitchen', price: 19.99, 
+          image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400&h=300&fit=crop&auto=format', 
+          description: 'Adjustable LED desk lamp with touch control and 3 brightness levels.', 
+          specs: ['LED', 'Touch dimmer', 'Flexible neck', 'Energy efficient'] }
+      ];
+
+      // ----- DOM refs -----
+      const productList = document.getElementById('productList');
+      const searchInput = document.getElementById('searchInput');
+      const noProductsMsg = document.getElementById('noProductsMsg');
+      const productCountSpan = document.getElementById('productCount');
+      const categoryFilterContainer = document.getElementById('categoryFilterContainer');
+      const categoryBadgeContainer = document.getElementById('categoryBadgeContainer');
+
+      // modal elements
+      const modalProductTitle = document.getElementById('modalProductTitle');
+      const modalProductImage = document.getElementById('modalProductImage');
+      const modalProductCategory = document.getElementById('modalProductCategory');
+      const modalProductPrice = document.getElementById('modalProductPrice');
+      const modalProductDescription = document.getElementById('modalProductDescription');
+      const modalProductSpecs = document.getElementById('modalProductSpecs');
+      const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+
+      // state
+      let currentCategory = 'all';
+      let currentSearch = '';
+
+      // ----- helpers -----
+      function getCategories() {
+        const cats = products.map(p => p.category);
+        return ['all', ...new Set(cats)];
+      }
+
+      // ----- render products based on filters -----
+      function renderProducts() {
+        const filtered = products.filter(p => {
+          const matchCategory = currentCategory === 'all' || p.category === currentCategory;
+          const matchSearch = p.title.toLowerCase().includes(currentSearch.toLowerCase()) ||
+                              p.category.toLowerCase().includes(currentSearch.toLowerCase());
+          return matchCategory && matchSearch;
+        });
+
+        // update count
+        productCountSpan.textContent = filtered.length;
+
+        if (filtered.length === 0) {
+          productList.innerHTML = '';
+          noProductsMsg.style.display = 'block';
+          return;
+        }
+        noProductsMsg.style.display = 'none';
+
+        // build grid
+        let html = '';
+        filtered.forEach(p => {
+          html += `
+            <div class="col-sm-6 col-md-4 col-lg-3">
+              <div class="card product-card" data-id="${p.id}">
+                <img src="${p.image}" class="card-img-top" alt="${p.title}" loading="lazy" />
+                <div class="card-body">
+                  <div class="product-category">${p.category}</div>
+                  <div class="product-title">${p.title}</div>
+                  <div class="product-price">$${p.price.toFixed(2)}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        productList.innerHTML = html;
+
+        // attach click listeners to product cards for modal
+        document.querySelectorAll('.product-card').forEach(card => {
+          card.addEventListener('click', function(e) {
+            const id = parseInt(this.dataset.id);
+            const product = products.find(p => p.id === id);
+            if (product) openModal(product);
+          });
+        });
+      }
+
+      // ----- open modal with product details -----
+      function openModal(product) {
+        modalProductTitle.textContent = product.title;
+        modalProductImage.src = product.image;
+        modalProductImage.alt = product.title;
+        modalProductCategory.textContent = product.category;
+        modalProductPrice.textContent = `$${product.price.toFixed(2)}`;
+        modalProductDescription.textContent = product.description;
+        // specs list
+        if (product.specs && product.specs.length) {
+          let specHtml = '';
+          product.specs.forEach(spec => {
+            specHtml += `<li><i class="fas fa-check-circle text-success me-2"></i> ${spec}</li>`;
+          });
+          modalProductSpecs.innerHTML = specHtml;
+        } else {
+          modalProductSpecs.innerHTML = '<li>No specifications listed</li>';
+        }
+        productModal.show();
+      }
+
+      // ----- update category buttons & badges -----
+      function updateCategoryUI() {
+        const categories = getCategories();
+        // navbar buttons
+        let navHtml = '';
+        let badgeHtml = '';
+        categories.forEach(cat => {
+          const displayName = cat === 'all' ? 'All' : cat;
+          const activeClass = currentCategory === cat ? 'active' : '';
+          navHtml += `<li class="nav-item"><button class="category-btn ${activeClass}" data-category="${cat}">${displayName}</button></li>`;
+          // badges
+          const badgeActive = currentCategory === cat ? 'fw-bold text-primary' : '';
+          badgeHtml += `<span class="badge-category ${badgeActive}" data-category="${cat}" style="cursor:pointer;">${displayName}</span>`;
+        });
+        categoryFilterContainer.innerHTML = navHtml;
+        categoryBadgeContainer.innerHTML = badgeHtml;
+
+        // attach event listeners to category buttons (navbar & badges)
+        document.querySelectorAll('.category-btn, .badge-category').forEach(el => {
+          el.addEventListener('click', function(e) {
+            const cat = this.dataset.category;
+            if (cat === currentCategory) return;
+            currentCategory = cat;
+            // update active state on buttons
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll(`.category-btn[data-category="${cat}"]`).forEach(btn => btn.classList.add('active'));
+            document.querySelectorAll('.badge-category').forEach(b => b.classList.remove('fw-bold', 'text-primary'));
+            document.querySelectorAll(`.badge-category[data-category="${cat}"]`).forEach(b => b.classList.add('fw-bold', 'text-primary'));
+            renderProducts();
+          });
+        });
+      }
+
+      // ----- search listener -----
+      searchInput.addEventListener('input', function() {
+        currentSearch = this.value.trim();
+        renderProducts();
+      });
+
+      // ----- initialise -----
+      function init() {
+        updateCategoryUI();
+        renderProducts();
+      }
+
+      init();
+
+      // extra: if user clicks on category badge from filter section, same logic (already attached)
+    })();
+  </script>
+</body>
+</html>
