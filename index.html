@@ -10,19 +10,22 @@
   <style>
     /* custom styles */
     body {
-      background: #f8f9fa;
+      background: #000000;
+      color: #f8f9fa;
       padding-top: 70px;
     }
     .navbar-brand {
       font-weight: 600;
       letter-spacing: 0.5px;
+      color: #f8f9fa;
     }
     .product-card {
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       border: none;
       border-radius: 16px;
-      background: #ffffff;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.04);
+      background: #111111;
+      color: #f8f9fa;
+      box-shadow: 0 6px 14px rgba(255,255,255,0.05);
       height: 100%;
       cursor: pointer;
     }
@@ -35,7 +38,7 @@
       border-top-right-radius: 16px;
       height: 200px;
       object-fit: cover;
-      background: #e9ecef;
+      background: #1f1f1f;
     }
     .product-card .card-body {
       padding: 1.25rem;
@@ -44,44 +47,53 @@
       font-weight: 600;
       font-size: 1.1rem;
       margin-bottom: 0.3rem;
+      color: #f8f9fa;
     }
     .product-category {
       font-size: 0.8rem;
-      color: #6c757d;
+      color: #adb5bd;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .product-price {
       font-weight: 700;
-      color: #0d6efd;
+      color: #ffd166;
     }
     .filter-section {
-      background: white;
+      background: #111111;
+      color: #f8f9fa;
       padding: 1rem 1.2rem;
       border-radius: 60px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      box-shadow: 0 2px 10px rgba(255,255,255,0.06);
       margin-bottom: 2rem;
     }
     .sticky-nav {
-      background: rgba(255,255,255,0.92);
+      background: rgba(0,0,0,0.9);
       backdrop-filter: blur(8px);
-      box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 20px rgba(255,255,255,0.08);
     }
     .modal-img {
       width: 100%;
       max-height: 280px;
       object-fit: contain;
-      background: #f1f3f5;
+      background: #1f1f1f;
       border-radius: 12px;
       padding: 8px;
+    }
+    .modal-content {
+      background: #111111;
+      color: #f8f9fa;
+    }
+    .modal-header, .modal-footer {
+      border-color: #2c2c2c;
     }
     #noProductsMsg {
       display: none;
       padding: 2rem 0;
     }
     .badge-category {
-      background: #e9ecef;
-      color: #212529;
+      background: #1f1f1f;
+      color: #f8f9fa;
       font-weight: 400;
       padding: 0.4rem 0.9rem;
       border-radius: 40px;
@@ -91,15 +103,15 @@
       padding: 0.3rem 1.2rem;
       margin: 0.2rem 0.3rem;
       background: transparent;
-      border: 1px solid #dee2e6;
-      color: #212529;
+      border: 1px solid #444444;
+      color: #f8f9fa;
       transition: all 0.15s;
     }
     .category-btn.active,
     .category-btn:hover {
-      background: #0d6efd;
-      border-color: #0d6efd;
-      color: white;
+      background: #ffd166;
+      border-color: #ffd166;
+      color: #000000;
     }
     @media (max-width: 576px) {
       .filter-section {
@@ -276,6 +288,10 @@
         return ['all', ...new Set(cats)];
       }
 
+      function formatCurrency(value) {
+        return `KSh ${value.toFixed(2)}`;
+      }
+
       // ----- render products based on filters -----
       function renderProducts() {
         const filtered = products.filter(p => {
@@ -305,7 +321,7 @@
                 <div class="card-body">
                   <div class="product-category">${p.category}</div>
                   <div class="product-title">${p.title}</div>
-                  <div class="product-price">$${p.price.toFixed(2)}</div>
+                  <div class="product-price">${formatCurrency(p.price)}</div>
                 </div>
               </div>
             </div>
@@ -329,7 +345,7 @@
         modalProductImage.src = product.image;
         modalProductImage.alt = product.title;
         modalProductCategory.textContent = product.category;
-        modalProductPrice.textContent = `$${product.price.toFixed(2)}`;
+        modalProductPrice.textContent = formatCurrency(product.price);
         modalProductDescription.textContent = product.description;
         // specs list
         if (product.specs && product.specs.length) {
